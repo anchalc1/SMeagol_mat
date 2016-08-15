@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
+  <model name="MesoRD Test System: Tutorial">
+  <notes>
+    <body xmlns="http://www.w3.org/1999/xhtml">
+      <p>MesoRD Test System: Tutorial</p>
+
+      <p>This is a simple model of LacI with non-specific binding to
+      DNA in the nucleoid. </p>
+
+      <ul>
+	<li>Try running it with spatial discretization 0.5 um and 8
+	molecules shown per subvolume.</li>
+
+        <li>Colour the molecules as you like.</li>
+
+        <li>Turn off grid in the viewer using "g", use
+        "Ctrl+mouse-left" to zoom and use mouse to rotate.</li>
+      </ul>
+
+      <p>$Id: tutorial.xml 642 2012-01-05 14:14:06Z davidfange $</p>
+    </body>
+  </notes>
+
+
+
+  <!-- ********************
+       * UNIT DEFINITIONS *
+       ******************** -->
+  <listOfUnitDefinitions>
+
+    <unitDefinition id="degree">
+      <listOfUnits>
+        <unit kind="radian" multiplier="0.01745329252"/>
+      </listOfUnits>
+    </unitDefinition>
+
+    <unitDefinition id="Mps">
+      <listOfUnits>
+	<unit kind="mole" exponent="+1"/>
+	<unit kind="litre" exponent="-1"/>
+	<unit kind="second" exponent="-1"/>
+      </listOfUnits>
+    </unitDefinition>
+    
+    <unitDefinition id="pMps">
+      <listOfUnits>
+        <unit kind="mole"   exponent="-1"/>
+        <unit kind="litre"  exponent="+1"/>
+        <unit kind="second" exponent="-1"/>
+      </listOfUnits>
+    </unitDefinition>
+
+    <unitDefinition id="ps">
+      <listOfUnits>
+        <unit kind="second" exponent="-1"/>
+      </listOfUnits>
+    </unitDefinition>
+
+    <unitDefinition id="um">
+      <listOfUnits>
+        <unit kind="metre" scale="-6"/>
+      </listOfUnits>
+    </unitDefinition>
+    
+    <unitDefinition id="cm2ps">
+        <listOfUnits>
+            <unit kind="metre" exponent="2" scale="-2"/>
+            <unit kind="second" exponent="-1"/>
+        </listOfUnits>
+    </unitDefinition>
+
+    <unitDefinition id="um2ps">
+        <listOfUnits>
+            <unit kind="metre" exponent="2" scale="-6"/>
+            <unit kind="second" exponent="-1"/>
+        </listOfUnits>
+    </unitDefinition>
+    
+    <unitDefinition id="pmus">
+        <listOfUnits>
+            <unit kind="second" exponent="-1" scale="-6"/>
+        </listOfUnits>
+    </unitDefinition>
+    
+    <unitDefinition id="mycentimetre">
+        <listOfUnits>
+            <unit kind="metre" scale="-2"/>
+        </listOfUnits>
+    </unitDefinition>
+  </listOfUnitDefinitions>
+
+  <!-- ****************
+       * COMPARTMENTS *
+       **************** -->
+  <listOfCompartments>
+    <compartment id="CompartmentNucl"
+		 units="litre">
+      <annotation>
+          <MesoRD:csg xmlns:MesoRD="http://www.icm.uu.se">
+               <MesoRD:rotation MesoRD:x="0"
+			   MesoRD:y="0"
+			   MesoRD:z="1"
+			   MesoRD:angle="90"
+			   MesoRD:units="degree">
+		 <MesoRD:union>
+
+                    <MesoRD:translation MesoRD:x="0.00"
+                                          MesoRD:y="-0.75"
+                                          MesoRD:z="0"
+                                          MesoRD:units="um">
+
+                  <MesoRD:scale MesoRD:x="1"
+                                MesoRD:y="3"
+                                MesoRD:z="1">
+                      <MesoRD:sphere MesoRD:radius="0.3"
+                                     MesoRD:units="um"/>
+                  </MesoRD:scale> 
+                   </MesoRD:translation>
+
+                    <MesoRD:translation MesoRD:x="0.00"
+                                          MesoRD:y="0.75"
+                                          MesoRD:z="0"
+                                          MesoRD:units="um">
+
+                  <MesoRD:scale MesoRD:x="1"
+                                MesoRD:y="3"
+                                MesoRD:z="1">
+                      <MesoRD:sphere MesoRD:radius="0.3"
+                                     MesoRD:units="um"/>
+                  </MesoRD:scale> 
+                 </MesoRD:translation>
+
+               </MesoRD:union>
+	       </MesoRD:rotation>
+          </MesoRD:csg>
+      </annotation>
+    </compartment>
+
+    <compartment id="CompartmentCytopl"
+		 units="litre">
+      <annotation>
+          <MesoRD:csg xmlns:MesoRD="http://www.icm.uu.se">
+              <MesoRD:difference>
+              <MesoRD:rotation MesoRD:x="0"
+			   MesoRD:y="0"
+			   MesoRD:z="1"
+			   MesoRD:angle="90"
+			   MesoRD:units="degree">
+                  <MesoRD:union>
+                      <MesoRD:cylinder MesoRD:radius="0.5"
+                                       MesoRD:height="3"
+                                       MesoRD:units="um"/>
+                      <MesoRD:translation MesoRD:x="0.00"
+                                          MesoRD:y="-1.5"
+                                          MesoRD:z="0"
+                                          MesoRD:units="um">
+                          <MesoRD:sphere MesoRD:radius="0.5"
+                                         MesoRD:units="um"/>
+                      </MesoRD:translation>
+                      <MesoRD:translation MesoRD:x="0.00"
+                                          MesoRD:y="1.5"
+                                          MesoRD:z="0"
+                                          MesoRD:units="um">
+                          <MesoRD:sphere MesoRD:radius="0.5"
+                                         MesoRD:units="um"/>
+                      </MesoRD:translation>
+                  </MesoRD:union>
+	      </MesoRD:rotation>
+                  <MesoRD:compartment MesoRD:id="CompartmentNucl"/>
+              </MesoRD:difference>
+	  </MesoRD:csg>
+      </annotation>
+    </compartment>
+  </listOfCompartments>
+  <!-- ***********
+       * SPECIES *
+       *********** -->
+
+  <listOfSpecies>
+    <species id="FN"
+             name="A"
+             boundaryCondition="false"
+             compartment="CompartmentNucl"
+             hasOnlySubstanceUnits="true"
+             initialAmount="0"
+             substanceUnits="item">
+      <annotation>
+          <MesoRD:species xmlns:MesoRD="http://www.icm.uu.se">
+              <MesoRD:diffusion MesoRD:compartment="CompartmentNucl"
+                                MesoRD:rate="3.0"
+                                MesoRD:units="um2ps"/>
+              <MesoRD:diffusion MesoRD:compartment="CompartmentCytopl"
+                                MesoRD:rate="3.0"
+                                MesoRD:units="um2ps"/>
+          </MesoRD:species>                          
+      </annotation>
+    </species>
+
+    <species id="BN"
+             name="B"
+             boundaryCondition="false"
+             compartment="CompartmentNucl"
+             hasOnlySubstanceUnits="true"
+             initialAmount="10"
+             substanceUnits="item">
+      <annotation>
+          <MesoRD:species xmlns:MesoRD="http://www.icm.uu.se">
+              <MesoRD:diffusion MesoRD:compartment="CompartmentNucl"
+                                MesoRD:rate="0.04"
+                                MesoRD:units="um2ps"/>
+              <MesoRD:diffusion MesoRD:compartment="CompartmentCytopl"
+                                MesoRD:rate="0"
+                                MesoRD:units="um2ps"/>
+	    <MesoRD:tracking MesoRD:initialAmount="100"
+				   MesoRD:units="percent"/>
+          </MesoRD:species>                          
+      </annotation>
+    </species>
+
+
+    <species id="FC"
+             name="A"
+             boundaryCondition="false"
+             compartment="CompartmentCytopl"
+             hasOnlySubstanceUnits="true"
+             initialAmount="10"
+             substanceUnits="item">
+	<!-- The A molecules diffuses with the same rate in and
+	     between all compartments -->
+      <annotation>
+          <MesoRD:species xmlns:MesoRD="http://www.icm.uu.se">
+              <MesoRD:diffusion MesoRD:compartment="CompartmentNucl"
+                                MesoRD:rate="3.0"
+                                MesoRD:units="um2ps"/>
+              <MesoRD:diffusion MesoRD:compartment="CompartmentCytopl"
+                                MesoRD:rate="3.0"
+                                MesoRD:units="um2ps"/>
+	    <MesoRD:tracking MesoRD:initialAmount="100"
+				   MesoRD:units="percent"/>
+          </MesoRD:species>                          
+      </annotation>
+    </species>
+
+    <species id="BC"
+             name="B"
+             boundaryCondition="false"
+             compartment="CompartmentCytopl"
+             hasOnlySubstanceUnits="true"
+             initialAmount="0"
+             substanceUnits="item">
+      <annotation>
+          <MesoRD:species xmlns:MesoRD="http://www.icm.uu.se">
+              <MesoRD:diffusion MesoRD:compartment="CompartmentNucl"
+                                MesoRD:rate="0"
+                                MesoRD:units="um2ps"/>
+              <MesoRD:diffusion MesoRD:compartment="CompartmentCytopl"
+                                MesoRD:rate="0"
+                                MesoRD:units="um2ps"/>
+          </MesoRD:species>                          
+      </annotation>
+    </species>
+  </listOfSpecies>
+
+
+
+  <!-- **************
+       * PARAMETERS *
+       ************** -->
+  <listOfParameters>
+    <parameter id="kAttach"  units="ps"   value="200"/>
+    <parameter id="kDetach"  units="ps"   value="100"/>
+  </listOfParameters>
+
+  <!-- *************
+       * REACTIONS *
+       ************* -->
+  <listOfReactions>
+    <!-- binding and unbinding of LacI in the nucleoid -->
+    <reaction id="LacBindingN" reversible="false">
+      <listOfReactants>
+        <speciesReference species="FN"/>
+      </listOfReactants>
+      <listOfProducts>
+        <speciesReference species="BN"/>
+      </listOfProducts>
+      <kineticLaw>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci>kAttach</ci>
+            <ci>FN</ci>
+          </apply>
+        </math>
+      </kineticLaw>
+    </reaction>
+
+    <reaction id="LacUnbinding" reversible="false">
+      <listOfReactants>
+        <speciesReference species="BN"/>
+      </listOfReactants>
+      <listOfProducts>
+        <speciesReference species="FN"/>
+      </listOfProducts>
+      <kineticLaw>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci>kDetach</ci>
+            <ci>BN</ci>
+          </apply>
+        </math>
+      </kineticLaw>
+    </reaction>
+    
+  </listOfReactions>
+
+  </model>
+</sbml>

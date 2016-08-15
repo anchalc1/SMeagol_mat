@@ -1,0 +1,38 @@
+- aktivera lz(?)-kompression i tif-filerna som skapas
+
+- inför flexibla kameramodeller som inkluderar både EMCCD och sCMOS?
+
+- make the GUI handle incorrect runinput files more gracefully.
+
+- ändra photoactivation-anrop till att bara ge parametrar första
+  gången, och ändra funktionerna så att de använder persistent
+  variables.
+
+- manual: radera mesord-sökvägar etc
+
+- complete matlab help index: SMeagol.m (help SMeagol)
+
+- dokumentera bimolekylärt tracking-exempel
+
+- consistently use uint16 for image matrices?
+
+- find out if questdlg_normalWindow can be posted to file exchange or
+  otherwise shipped as open source code. Then move the
+  SM_PSFgen_... back to core.
+
+- Some kind of options check needed?
+
+- convert global -> local paths when saving the runinputfile
+
+- path handling when writing runinput file: detect all path- and
+  filenames, and convert them to be relative to the runinput file
+  location?
+
+done:
+- register sourceforge site: https://sourceforge.net/projects/smeagol/
+- README.txt file (or README.md for github?)
+- add license texts to all m-files
+- make main programs print license on startup
+- bug in SM_relative_path when one folder is a subfolder of the other
+
+

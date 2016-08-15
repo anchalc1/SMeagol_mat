@@ -1,0 +1,12 @@
+*~
+testcode/*
+mesord/mesord
+examples/ex3_PopZ_ecoli/*.txt
+examples/ex3_PopZ_ecoli/geom*
+
+#*.mat
+*\#*
+SMeagol.pdf
+Exported*Items.bib
+
+
