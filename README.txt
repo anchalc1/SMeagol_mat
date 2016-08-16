@@ -1,10 +1,13 @@
  SMeagol is a program suite for simulating superresolution microscopy
  data with diffusing fluorophores, which should be useful for
  development and validation of methods in camera-based single particle
- tracking. The program runs on Matlab.  The latest version of the
- software as well as a forum for discussion and questions can be found
- at 'sourceforge.net/projects/smeagol/'.
- ========================================================================= 
+ tracking. The program runs on Matlab.
+ https://github.com/bmelinden/SMeagol_mat is the matlab source code.
+ 
+ The latest release, including install scripts, documentation and a
+ forum for discussion and questions can be found at
+ http://smeagol.sourceforge.net/
+ =========================================================================
  Copyright (C) 2015 Martin Lindén and Johan Elf
  
  E-mail: bmelinden@gmail.com, johan.elf@gmail.com
@@ -48,3 +51,16 @@ v1.0.1 (2015-12-11): bugfix and small additions
  - added single pulse activation model
 v1.0  (2015-07-xx): beta release for review purposes. 
  
+=========================================================================
+Installation:
+
+1. Automated full installation: Installation scripts including
+pre-compiled binaries of the stochastic reaction-diffusion simulation
+enging can be found on http://smeagol.sourceforge.net/
+
+2. Matlab part and development: The Matlab part of SMeagol, available
+at at https://github.com/bmelinden/SMeagol_mat, can run
+independently. To add the reaction-diffusion part, one can simply copy
+an appropriate mesord binary (from e.g., method 1) to
+/path/to/SMeagol_mat/mesord/mesord
+
