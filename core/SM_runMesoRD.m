@@ -1,7 +1,6 @@
 function sysflag=SM_runMesoRD(mesoRDoptions,targetFolder)
 % SM_runMesoRD(mesRDoptions,targetFolder)
-% Call the mesord binary with a target folder and commandline options
-% (including path to a model file) to see if tracking is supported.
+% Run a mesoRD simulation from the matlab command line.
 % 
 % input :
 % mesoRDoptions : command-line options for mesoRD. '-h' will print the
@@ -16,6 +15,9 @@ function sysflag=SM_runMesoRD(mesoRDoptions,targetFolder)
 % output : The output from mesoRD is written to the matlab command prompt.
 % sysflag       : the output from the call to system() that actually
 %                 executes the mesoRD command.
+%
+% See also: SM_mesoRD_tracking_test to test your mesoRD for tracking
+% capability.
 % ML 2015-09-10
 
 %% copyright notice
