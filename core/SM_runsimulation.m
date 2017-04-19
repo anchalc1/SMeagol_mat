@@ -255,221 +255,227 @@ while(nFrame<opt.output.maxFrames)
         clear k
     end
     if(isempty(tTrj))
-        disp('no new line to be read (2)')
-        break
-    end
-    %% advance reactions past trajectory time tTrj
-    % traj1=traj; %%% for debugging
-    %act1=activationTSI;
-    %tTrj1=tTrj;
-    %idTRJ1=idTrj;
-    %sTrj1=sTrj;
-    %xTrj1=xTrj;
-    %rState1=rng;  %%% for debugging
-    while(tRct<=tTrj)
-        [tRct,idRct,sRct,xRct]=SM_readLine(fiR,camA,camB,timeScale,allSpecies,true); % read all particles
-        if(isempty(tRct)) % then there are no more rections to read
+        if(isinf(opt.output.maxFrames))
+            % then we stop the simulation when running out of input data
+            disp('output.maxFrames=inf, no new line to be read (2): ending simulation!')
             break
         end
-        % initialize if new particle
-        if( idRct>length(traj) || activationTSI(2,idRct)==0 )
-            % then this is a new particle, and needs an activation time
-            activationTSI(1,idRct)=actFun(tRct);
-            activationTSI(2,idRct)=1;
-            activationTSI(3,idRct)=baseIntFun();% basal fluorescence intensity of this fluorophore
-            % see if position needs to be saved
-            if( activationTSI(1,idRct) > (tRct+ignoreHorizon) )
-                ignoreThis(idRct)=true;
+        % if opt.output.maxFrames is finite, continue until that many
+        % frames are produced anyway
+    else % do stuff that only makes sense if there are particles
+        %% advance reactions past trajectory time tTrj
+        % traj1=traj; %%% for debugging
+        %act1=activationTSI;
+        %tTrj1=tTrj;
+        %idTRJ1=idTrj;
+        %sTrj1=sTrj;
+        %xTrj1=xTrj;
+        %rState1=rng;  %%% for debugging
+        while(tRct<=tTrj)
+            [tRct,idRct,sRct,xRct]=SM_readLine(fiR,camA,camB,timeScale,allSpecies,true); % read all particles
+            if(isempty(tRct)) % then there are no more rections to read
+                break
+            end
+            % initialize if new particle
+            if( idRct>length(traj) || activationTSI(2,idRct)==0 )
+                % then this is a new particle, and needs an activation time
+                activationTSI(1,idRct)=actFun(tRct);
+                activationTSI(2,idRct)=1;
+                activationTSI(3,idRct)=baseIntFun();% basal fluorescence intensity of this fluorophore
+                % see if position needs to be saved
+                if( activationTSI(1,idRct) > (tRct+ignoreHorizon) )
+                    ignoreThis(idRct)=true;
+                    traj{idRct}=[];
+                else
+                    ignoreThis(idRct)=false;
+                    traj{idRct}=[tRct sRct xRct];
+                end
+            elseif(activationTSI(2,idRct)==-1) % this particle is already bleached or degraded, ignore it
+                
+            elseif(sRct==-1 && tRct < activationTSI(1,idRct)) % then degradation happened before activation
+                activationTSI(1:2,idRct)=[tRct;-1];
                 traj{idRct}=[];
+                ignoreThis(idRct)=1;
+            elseif( sRct > -1 && (tRct+ignoreHorizon) < activationTSI(1,idRct) )
+                % activation is too far off at reaction time to take note.
+                % coordinate will be read before activation anyway
             else
-                ignoreThis(idRct)=false;
-                traj{idRct}=[tRct sRct xRct];
+                traj{idRct}(end+1,:)=[tRct sRct xRct];
             end
-        elseif(activationTSI(2,idRct)==-1) % this particle is already bleached or degraded, ignore it
-            
-        elseif(sRct==-1 && tRct < activationTSI(1,idRct)) % then degradation happened before activation
-            activationTSI(1:2,idRct)=[tRct;-1];
-            traj{idRct}=[];
-            ignoreThis(idRct)=1;
-        elseif( sRct > -1 && (tRct+ignoreHorizon) < activationTSI(1,idRct) )
-            % activation is too far off at reaction time to take note.
-            % coordinate will be read before activation anyway
-        else
-            traj{idRct}(end+1,:)=[tRct sRct xRct];
         end
-    end
-    %% sort events for each particle, and interpolate positions for t=tFrame1
-    % traj2=traj;act2=activationTSI;rState2=rng; %%% for debugging
-    for k=1:length(traj)
-        if(~isempty(traj{k}))
-            [~,ind]=sort(traj{k}(:,1));
-            traj{k}=traj{k}(ind,:);
-            
-            ind=find(traj{k}(:,1)==tFrame1,1);
-            if(isempty(ind)) % then interpolation to tFrame1 is needed
-                i1=find(traj{k}(:,1)>tFrame1,1); % i1 is the first entry after tFrame1
-                if(~isempty(i1) && i1>1)         % then interpolation is possible
-                    i0=i1-1;                     % i0 is the last entry before tFrame1
-                    s0=traj{k}(i0,2);
-                    T=traj{k}(i0:i1,1);
-                    X=traj{k}(i0:i1,3:5);
-                    D=opt.trj.D(s0);
-                    XI=brownianBridge_piecewise(T,X,D,tFrame1);
-                    traj{k}=[traj{k}(1:i0,:);
-                             tFrame1 s0 XI;
-                             traj{k}(i1:end,:)];
-                else % interpolation not possible
-                    % In this case, the trajectory is simply not appended,
-                    % and the particle was either just created or is about
-                    % to degrade.
-                    % disp('could not interpolate') %%% debug check
-                    % keyboard
+        %% sort events for each particle, and interpolate positions for t=tFrame1
+        % traj2=traj;act2=activationTSI;rState2=rng; %%% for debugging
+        for k=1:length(traj)
+            if(~isempty(traj{k}))
+                [~,ind]=sort(traj{k}(:,1));
+                traj{k}=traj{k}(ind,:);
+                
+                ind=find(traj{k}(:,1)==tFrame1,1);
+                if(isempty(ind)) % then interpolation to tFrame1 is needed
+                    i1=find(traj{k}(:,1)>tFrame1,1); % i1 is the first entry after tFrame1
+                    if(~isempty(i1) && i1>1)         % then interpolation is possible
+                        i0=i1-1;                     % i0 is the last entry before tFrame1
+                        s0=traj{k}(i0,2);
+                        T=traj{k}(i0:i1,1);
+                        X=traj{k}(i0:i1,3:5);
+                        D=opt.trj.D(s0);
+                        XI=brownianBridge_piecewise(T,X,D,tFrame1);
+                        traj{k}=[traj{k}(1:i0,:);
+                            tFrame1 s0 XI;
+                            traj{k}(i1:end,:)];
+                    else % interpolation not possible
+                        % In this case, the trajectory is simply not appended,
+                        % and the particle was either just created or is about
+                        % to degrade.
+                        % disp('could not interpolate') %%% debug check
+                        % keyboard
+                    end
                 end
             end
         end
-    end
-    clear s0 T X D XI k
-    %% prune information for t<tFrame0-opt.sample.dt     % note that if the simulated time points are more sparse than this,    % points will be interpolated into the traj{} records anyway, so this    % pruning is safe irrespective of the spacing of simulated positions.
-    % traj3=traj;act3=activationTSI;rState3=rng; %%% for debugging
-    for k=1:length(traj)
-        if(~isempty(traj{k}))
-            % remove old events
-            % ind=find(traj{k}(:,1)>=tFrame0-opt.sample.dt);traj{k}=traj{k}(ind,:);
-            traj{k}=traj{k}(traj{k}(:,1)>=tFrame0-opt.sample.dt,:);
-            % check for degradation clashes
-            ind=find(traj{k}(:,2)==-1);
-            if(~isempty(ind))
-                tDegrade=traj{k}(ind,1);
-                traj{k}=[traj{k}(traj{k}(:,1)<tDegrade,:);
-                         traj{k}(ind,:)]; % keep only degradation, and the events strictly before it                
+        clear s0 T X D XI k
+        %% prune information for t<tFrame0-opt.sample.dt     % note that if the simulated time points are more sparse than this,    % points will be interpolated into the traj{} records anyway, so this    % pruning is safe irrespective of the spacing of simulated positions.
+        % traj3=traj;act3=activationTSI;rState3=rng; %%% for debugging
+        for k=1:length(traj)
+            if(~isempty(traj{k}))
+                % remove old events
+                % ind=find(traj{k}(:,1)>=tFrame0-opt.sample.dt);traj{k}=traj{k}(ind,:);
+                traj{k}=traj{k}(traj{k}(:,1)>=tFrame0-opt.sample.dt,:);
+                % check for degradation clashes
+                ind=find(traj{k}(:,2)==-1);
+                if(~isempty(ind))
+                    tDegrade=traj{k}(ind,1);
+                    traj{k}=[traj{k}(traj{k}(:,1)<tDegrade,:);
+                        traj{k}(ind,:)]; % keep only degradation, and the events strictly before it
+                end
             end
         end
-    end
-    clear k
-    %% simulate photophysics
-    %%%traj4=traj;    act4=activationTSI;    rState4=rng;  %%% for debugging only
-    xDetected=[]; % positions of detected photons in this frame, for plotting purposes
-    xEmitted=[];  % positions of photon emission events in this frame, for plotting purposes
-    for k=1:size(activationTSI,2)
-        if(activationTSI(1,k)<tFrame1 && activationTSI(2,k)>0) % then this fluorophore is active in this frame
-            try
-                % states: 1 = fluorescent, 0=bleached
-                t0=activationTSI(1,k); % current start time
-                s0=activationTSI(2,k); % current photophysics state
-
-                % advance through exposure time and emit photons
-                if(t0<tFrame0+opt.sample.tE)
-                    Q1 =photophys.Q{1};
-                    QB1=photophys.kb{1};
+        clear k
+        %% simulate photophysics
+        %%%traj4=traj;    act4=activationTSI;    rState4=rng;  %%% for debugging only
+        xDetected=[]; % positions of detected photons in this frame, for plotting purposes
+        xEmitted=[];  % positions of photon emission events in this frame, for plotting purposes
+        for k=1:size(activationTSI,2)
+            if(activationTSI(1,k)<tFrame1 && activationTSI(2,k)>0) % then this fluorophore is active in this frame
+                try
+                    % states: 1 = fluorescent, 0=bleached
+                    t0=activationTSI(1,k); % current start time
+                    s0=activationTSI(2,k); % current photophysics state
                     
-                    [~,sH]=SM_markovForward(Q1,s0,t0,tFrame0+opt.sample.tE,QB1);
-                    % handle fluorophore degradation during the exposure time
-                    if( traj{k}(end,2)==-1 && traj{k}(end,1)<tFrame0+opt.sample.tE)
-                        %ind=find(sH(:,1)<traj{k}(end,1));  % keep only photoevents before degradation
-                        %sH=[sH(ind,:) ;traj{k}(end,1) -1]; % terminate flourescence at degradation time
-                        sH=[sH(sH(:,1)<traj{k}(end,1),:) ;traj{k}(end,1) -1]; % terminate flourescence at degradation time
-                    end
-                    activationTSI(1:2,k)=sH(end,1:2)';
-                    %startingTrueState=s0; % remember true diffusive state for ground truth
-                    startingTrueState=traj{k}(find(traj{k}(:,1)<=t0,1,'last'),2); % true diffusive state at the onset of exposure
-                    %% now emit some light
-                    ind=find(sH(1:end-1,2)>0); % starts of non-bleached periods
-                    emF=reshape(photophys.emissionFactor(sH(ind,2)),length(ind),1);
-                    tOn =sH(ind,1);
-                    tOff=sH(ind+1,1);
-                    dt = tOff-tOn; % fluorescent intervals
-                    nMean=activationTSI(3,k)*dt.*emF; % average number of photons
-                    nPh=poissrnd(nMean);         % emitted photons
-                    
-                    tPhk=[]; % photon emission times
-                    for mm=1:length(nPh)
-                        tPhk=[tPhk; tOn(mm)+dt(mm)*sort(rand(nPh(mm),1))];
-                    end
-                    if(~isempty(tPhk))
-                        %tPhk=sort(tPhk);
-                        % photon emission positions
-                        T=traj{k}(:,1); %% error on line 243, index exceeds matrix dimensions?
-                        D=opt.trj.D(traj{k}(1:end-1,2)); % last diffusion constant is not used anyway
-                        X=traj{k}(:,3:5);
+                    % advance through exposure time and emit photons
+                    if(t0<tFrame0+opt.sample.tE)
+                        Q1 =photophys.Q{1};
+                        QB1=photophys.kb{1};
                         
-                        % interpolate positions using Brownian bridges
-                        xPhk=brownianBridge_piecewise(T,X,D,tPhk); % photon emission positions
-                        yPhk=psfFun(tPhk,xPhk);                    % detected photon positions
-                        
-                        % detected photon positions
-                        xEmitted=[xEmitted;   xPhk];
-                        xDetected=[xDetected; yPhk];
-                        
-                        % compute and save tracking truth for this fluorophore
-                        
-                        %%% this is the position trace bug: traj{k}(1,:) is
-                        %%% not always the beginning of the frame. Need to
-                        %%% identify explicitly which row of traj{k} to use
-                        %%% for x0.
-                        [~,ix0]=min(abs(T-tFrame0));
-                        %ix0=find(T>=tFrame0,1) % about twice as fast, but perhaps less robust
-                        x0 =traj{k}(ix0,3:5); % position at beginning of frame
-                        
-                        
-                        
-                        xE =mean(xPhk,1);  % avergare photon emission position
-                        xD =mean(yPhk,1);  % average position of detected photons
-                        covD=cov(yPhk,1);  % covariance matrix of detected photons
-                        if(numel(covD)~=4) % then probably no photons were emitted
-                           covD=zeros(2,2); 
-                           xD=[NaN NaN];
+                        [~,sH]=SM_markovForward(Q1,s0,t0,tFrame0+opt.sample.tE,QB1);
+                        % handle fluorophore degradation during the exposure time
+                        if( traj{k}(end,2)==-1 && traj{k}(end,1)<tFrame0+opt.sample.tE)
+                            %ind=find(sH(:,1)<traj{k}(end,1));  % keep only photoevents before degradation
+                            %sH=[sH(ind,:) ;traj{k}(end,1) -1]; % terminate flourescence at degradation time
+                            sH=[sH(sH(:,1)<traj{k}(end,1),:) ;traj{k}(end,1) -1]; % terminate flourescence at degradation time
                         end
+                        activationTSI(1:2,k)=sH(end,1:2)';
+                        %startingTrueState=s0; % remember true diffusive state for ground truth
+                        startingTrueState=traj{k}(find(traj{k}(:,1)<=t0,1,'last'),2); % true diffusive state at the onset of exposure
+                        %% now emit some light
+                        ind=find(sH(1:end-1,2)>0); % starts of non-bleached periods
+                        emF=reshape(photophys.emissionFactor(sH(ind,2)),length(ind),1);
+                        tOn =sH(ind,1);
+                        tOff=sH(ind+1,1);
+                        dt = tOff-tOn; % fluorescent intervals
+                        nMean=activationTSI(3,k)*dt.*emF; % average number of photons
+                        nPh=poissrnd(nMean);         % emitted photons
                         
-                        % FP tracking format (we ignore cellNr and datasetNr).
-                        % trajs{i} = [x(t) y(t) |xy(t)-xy(t-1)| frameNr cellNr datasetNr];
-                        % we will save z(t) as well, but no step lengths:
-                        % truTraj{i}      =[x(t) y(t) z(t) frameNr movieNr] %
-                        % em/detAverage{i}=[x(t) y(t) z(t) frameNr movieNr] 
-                        % z(t)=0 for the detectionAverage
-                        % spotStats{i}=[nPh covXX covXY covYY];
-                        if(length(tru.positionSnapshots)<k || isempty(tru.positionSnapshots{k})) % first frame in a trajectory
-                            tru.positionSnapshots{k}         =[x0   nFrame movieNumber];
-                            tru.emissionAverage{k}           =[xE   nFrame movieNumber];
-                            tru.diffusiveState{k}            =[startingTrueState nFrame movieNumber];
-                            tru.detectionAverage{k}          =[xD 0 nFrame movieNumber];
-                            tru.spotStats{k}                 =[sum(nPh) covD(1,1) covD(1,2) covD(2,2)];
-                        else
-                            tru.positionSnapshots{k}(end+1,:)=[x0   nFrame movieNumber]; % add to existing trajectory
-                            tru.emissionAverage{k}(end+1,:)  =[xE   nFrame movieNumber];
-                            tru.diffusiveState{k}(end+1,:)   =[startingTrueState nFrame movieNumber];                            
-                            tru.detectionAverage{k}(end+1,:) =[xD 0 nFrame movieNumber];
-                            tru.spotStats{k}(end+1,:)        =[size(yPhk,1) covD(1,1) covD(1,2) covD(2,2)];
+                        tPhk=[]; % photon emission times
+                        for mm=1:length(nPh)
+                            tPhk=[tPhk; tOn(mm)+dt(mm)*sort(rand(nPh(mm),1))];
                         end
+                        if(~isempty(tPhk))
+                            %tPhk=sort(tPhk);
+                            % photon emission positions
+                            T=traj{k}(:,1); %% error on line 243, index exceeds matrix dimensions?
+                            D=opt.trj.D(traj{k}(1:end-1,2)); % last diffusion constant is not used anyway
+                            X=traj{k}(:,3:5);
+                            
+                            % interpolate positions using Brownian bridges
+                            xPhk=brownianBridge_piecewise(T,X,D,tPhk); % photon emission positions
+                            yPhk=psfFun(tPhk,xPhk);                    % detected photon positions
+                            
+                            % detected photon positions
+                            xEmitted=[xEmitted;   xPhk];
+                            xDetected=[xDetected; yPhk];
+                            
+                            % compute and save tracking truth for this fluorophore
+                            
+                            %%% this is the position trace bug: traj{k}(1,:) is
+                            %%% not always the beginning of the frame. Need to
+                            %%% identify explicitly which row of traj{k} to use
+                            %%% for x0.
+                            [~,ix0]=min(abs(T-tFrame0));
+                            %ix0=find(T>=tFrame0,1) % about twice as fast, but perhaps less robust
+                            x0 =traj{k}(ix0,3:5); % position at beginning of frame
+                            
+                            
+                            
+                            xE =mean(xPhk,1);  % avergare photon emission position
+                            xD =mean(yPhk,1);  % average position of detected photons
+                            covD=cov(yPhk,1);  % covariance matrix of detected photons
+                            if(numel(covD)~=4) % then probably no photons were emitted
+                                covD=zeros(2,2);
+                                xD=[NaN NaN];
+                            end
+                            
+                            % FP tracking format (we ignore cellNr and datasetNr).
+                            % trajs{i} = [x(t) y(t) |xy(t)-xy(t-1)| frameNr cellNr datasetNr];
+                            % we will save z(t) as well, but no step lengths:
+                            % truTraj{i}      =[x(t) y(t) z(t) frameNr movieNr] %
+                            % em/detAverage{i}=[x(t) y(t) z(t) frameNr movieNr]
+                            % z(t)=0 for the detectionAverage
+                            % spotStats{i}=[nPh covXX covXY covYY];
+                            if(length(tru.positionSnapshots)<k || isempty(tru.positionSnapshots{k})) % first frame in a trajectory
+                                tru.positionSnapshots{k}         =[x0   nFrame movieNumber];
+                                tru.emissionAverage{k}           =[xE   nFrame movieNumber];
+                                tru.diffusiveState{k}            =[startingTrueState nFrame movieNumber];
+                                tru.detectionAverage{k}          =[xD 0 nFrame movieNumber];
+                                tru.spotStats{k}                 =[sum(nPh) covD(1,1) covD(1,2) covD(2,2)];
+                            else
+                                tru.positionSnapshots{k}(end+1,:)=[x0   nFrame movieNumber]; % add to existing trajectory
+                                tru.emissionAverage{k}(end+1,:)  =[xE   nFrame movieNumber];
+                                tru.diffusiveState{k}(end+1,:)   =[startingTrueState nFrame movieNumber];
+                                tru.detectionAverage{k}(end+1,:) =[xD 0 nFrame movieNumber];
+                                tru.spotStats{k}(end+1,:)        =[size(yPhk,1) covD(1,1) covD(1,2) covD(2,2)];
+                            end
+                        end
+                        clear ind tOn tOff dt nMean nPh
+                        % prepare for dark period
                     end
-                    clear ind tOn tOff dt nMean nPh
-                    % prepare for dark period
+                    % advance until beginning of next frame
+                    s0=activationTSI(2,k); % current state
+                    t0=activationTSI(1,k); % current start time
+                    Q2=photophys.Q{2};
+                    QB2=photophys.kb{2};
+                    if(s0>0) % more Markov dynamics if the fluorophore is not bleached
+                        [~,sH]=SM_markovForward(Q2,s0,t0,tFrame1,QB2);
+                        activationTSI(1:2,k)=sH(end,1:2)';
+                    end
+                    % handle degradation during dark period (unless spontaneous
+                    % bleaching happened too).
+                    if( activationTSI(2,k)>-1 && traj{k}(end,2)==-1 && traj{k}(end,1)<tFrame1)
+                        activationTSI(1:2,k)=[traj{k}(end,1); -1];
+                    end
+                catch me
+                    disp('SM_runsimulation encountered an error during photophysics simulation')
+                    disp(me.message)
+                    disp(me.stack)
+                    errFile=['errorlog_SM_runsimulation' num2str(rand) '.mat'];
+                    save(errFile);
+                    disp(['saving workspace at crash to ' errFile ])
+                    rethrow(me)
                 end
-                % advance until beginning of next frame
-                s0=activationTSI(2,k); % current state
-                t0=activationTSI(1,k); % current start time
-                Q2=photophys.Q{2};
-                QB2=photophys.kb{2};
-                if(s0>0) % more Markov dynamics if the fluorophore is not bleached
-                    [~,sH]=SM_markovForward(Q2,s0,t0,tFrame1,QB2);
-                    activationTSI(1:2,k)=sH(end,1:2)';
-                end
-                % handle degradation during dark period (unless spontaneous
-                % bleaching happened too).
-                if( activationTSI(2,k)>-1 && traj{k}(end,2)==-1 && traj{k}(end,1)<tFrame1)
-                    activationTSI(1:2,k)=[traj{k}(end,1); -1];
-                end
-            catch me
-                disp('SM_runsimulation encountered an error during photophysics simulation')
-                disp(me.message)
-                disp(me.stack)
-                errFile=['errorlog_SM_runsimulation' num2str(rand) '.mat'];
-                save(errFile);
-                disp(['saving workspace at crash to ' errFile ])
-                rethrow(me)
-            end            
+            end
         end
+        clear k
     end
-    clear k
     %% make background
      BGcounts=bgFun(tFrame0);
     %% make image (if needed)

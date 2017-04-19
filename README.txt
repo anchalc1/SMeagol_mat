@@ -38,7 +38,13 @@
  Boucharin, and also includes software developed by Martin Lindén and
  Fredrik Persson. See copyright in individual files in external/.
 =========================================================================
- Release notes:
+Release notes:
+current:
+ - changed behavior of SM_runsimulation.m to always generate
+   opt.output.maxFrame frames even if there is not enough input
+   trajectories. Exception: with opt.output.maxFrame=inf, the
+   simulation is terminated when the input trajectories end.
+
 v1.0.2 (2016-08-03): bugfix and small additions
  - new photoactivation model
  - new background models
