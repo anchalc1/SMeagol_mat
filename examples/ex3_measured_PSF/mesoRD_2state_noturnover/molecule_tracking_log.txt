@@ -1,0 +1,7 @@
+List of species and their corresponding diffusion constant in their current compartment:
+FN 1e-07 cm2ps
+BN 1e-09 cm2ps
+FC 1e-07 cm2ps
+BC 0 cm2ps
+Size of the subvolume: 1e-06 cm
+Timestep between the outputs: 0.0037 sec

@@ -1,4 +1,4 @@
-% IMBG=SM_bg_const_pixel(t,bgOpt,cameraOpt)
+% IMBG=SM_bg_constant(t,bgOpt,cameraOpt)
 % 
 % Generate noisy background using Poisson noise with average value
 % opt.background.photons_per_pixel counts per pixel, size and EMCCD noise
