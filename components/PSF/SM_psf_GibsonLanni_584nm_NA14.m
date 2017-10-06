@@ -98,7 +98,7 @@ end
 persistent FuMax FR_uz zMin zMax;
 if(isempty(FuMax))
     try
-        PSFfile=fullfile(mfilename('fullpath'),'..','..','PSFdata','numericalPSF_GibsonLanni_584nm_NA14.mat');
+        PSFfile=fullfile(fileparts(mfilename('fullpath')),'..','PSFdata','numericalPSF_GibsonLanni_584nm_NA14.mat');
         if(~exist(PSFfile,'file'))
             error('SM_psf_GibsonLanni_584nm_NA14: PSF data file numericalPSF_GibsonLanni_584nm_NA14.mat not found.')
         end
